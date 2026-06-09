@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora Trailing</title>
+  <meta name="theme-color" content="#0f766e">
+  <link rel="icon" href="./assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="./assets/favicon-48.png" sizes="48x48" type="image/png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon-v2.png">
+  <link rel="apple-touch-icon-precomposed" sizes="180x180" href="./apple-touch-icon-precomposed.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="./apple-touch-icon-167x167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="./apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="./apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="manifest" href="./site.webmanifest">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface-soft: #eef3f1;
+      --ink: #1f2933;
+      --muted: #64748b;
+      --line: #d9e1e8;
+      --teal: #0f766e;
+      --teal-soft: #d8f3ee;
+      --coral: #c2413c;
+      --coral-soft: #fae4e2;
+      --amber: #b7791f;
+      --amber-soft: #fff2cc;
+      --violet: #5b5bb7;
+      --green: #16a34a;
+      --red: #dc2626;
+      --shadow: 0 18px 50px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, #f9fbfc 0%, var(--bg) 42%, #edf2f7 100%);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: grid;
+      gap: 4px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.05;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 14px;
+      cursor: pointer;
+      box-shadow: 0 1px 0 rgba(31, 41, 51, 0.04);
+    }
+
+    .btn:hover {
+      border-color: #9fb1c2;
+    }
+
+    .btn.primary {
+      border-color: var(--teal);
+      background: var(--teal);
+      color: white;
+    }
+
+    .summary {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1.35fr repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 10px 0 14px;
+      background: linear-gradient(180deg, rgba(245, 247, 250, 0.98) 0%, rgba(245, 247, 250, 0.92) 74%, rgba(245, 247, 250, 0) 100%);
+      backdrop-filter: blur(10px);
+    }
+
+    .metric {
+      min-height: 118px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      display: grid;
+      align-content: space-between;
+      gap: 12px;
+    }
+
+    .metric.decision {
+      border-color: rgba(15, 118, 110, 0.32);
+      background: linear-gradient(180deg, #ffffff 0%, var(--teal-soft) 100%);
+    }
+
+    .metric.warn {
+      border-color: rgba(183, 121, 31, 0.45);
+      background: linear-gradient(180deg, #ffffff 0%, var(--amber-soft) 100%);
+    }
+
+    .metric.good {
+      border-color: rgba(22, 163, 74, 0.28);
+      background: linear-gradient(180deg, #ffffff 0%, #dcfce7 100%);
+    }
+
+    .metric.bad {
+      border-color: rgba(220, 38, 38, 0.28);
+      background: linear-gradient(180deg, #ffffff 0%, #fee2e2 100%);
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .value {
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .decision .value {
+      font-size: 24px;
+      line-height: 1.12;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .section {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid #cbd5df;
+      border-radius: 8px;
+      background: #fbfcfd;
+      color: var(--ink);
+      padding: 0 12px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #edf2f7;
+    }
+
+    .segmented button {
+      min-height: 40px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #475569;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .segmented button.active[data-side="LONG"] {
+      background: var(--teal);
+      color: white;
+    }
+
+    .segmented button.active[data-side="SHORT"] {
+      background: var(--coral);
+      color: white;
+    }
+
+    .segmented button.active[data-mode] {
+      background: var(--teal);
+      color: white;
+    }
+
+    .inline-controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      accent-color: var(--teal);
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #334155;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      border-color: var(--violet);
+      background: #ecebff;
+      color: #2f2d7f;
+      font-weight: 800;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .validation-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 12px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .validation-panel h3 {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .validation-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .validation-item {
+      display: grid;
+      grid-template-columns: 10px 1fr;
+      gap: 8px;
+      align-items: start;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .validation-item::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-top: 4px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .validation-item.ok::before {
+      background: var(--green);
+    }
+
+    .validation-item.bad::before {
+      background: var(--red);
+    }
+
+    .chart {
+      display: grid;
+      gap: 22px;
+    }
+
+    .price-map {
+      position: relative;
+      min-height: 252px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      overflow: hidden;
+      padding: 22px 18px;
+    }
+
+    .price-map.long {
+      background: linear-gradient(90deg, rgba(220, 38, 38, 0.08), rgba(91, 91, 183, 0.06), rgba(22, 163, 74, 0.1));
+    }
+
+    .price-map.short {
+      background: linear-gradient(90deg, rgba(22, 163, 74, 0.1), rgba(91, 91, 183, 0.06), rgba(220, 38, 38, 0.08));
+    }
+
+    .map-status {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 0 5px rgba(183, 121, 31, 0.12);
+    }
+
+    .status-dot.ok {
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.14);
+    }
+
+    .status-dot.bad {
+      background: var(--red);
+      box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.12);
+    }
+
+    .map-status strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .map-status span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      margin-top: 3px;
+    }
+
+    .track {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      top: 130px;
+      height: 8px;
+      border-radius: 999px;
+      background: #cbd5df;
+    }
+
+    .active-track {
+      position: absolute;
+      top: 130px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(100, 116, 139, 0.9);
+      left: var(--active-left);
+      width: var(--active-width);
+    }
+
+    .active-track.ok {
+      background: var(--green);
+      box-shadow: 0 6px 18px rgba(22, 163, 74, 0.2);
+    }
+
+    .active-track.bad {
+      background: var(--red);
+      box-shadow: 0 6px 18px rgba(220, 38, 38, 0.18);
+    }
+
+    .callback-track {
+      display: none;
+    }
+
+    .callback-label {
+      display: none;
+    }
+
+    .marker {
+      position: absolute;
+      top: 134px;
+      left: var(--x);
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      display: block;
+    }
+
+    .pin {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border: 3px solid white;
+      border-radius: 50%;
+      box-shadow: 0 3px 10px rgba(31, 41, 51, 0.25);
+    }
+
+    .pin.entry {
+      background: var(--green);
+    }
+
+    .marker.bad .pin.entry {
+      background: var(--red);
+    }
+
+    .pin.tp {
+      background: var(--violet);
+    }
+
+    .pin.stop {
+      background: var(--red);
+    }
+
+    .direction-cue {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .direction-cue::before {
+      content: "";
+      flex: 1;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--green), var(--violet), var(--red));
+      order: 2;
+    }
+
+    .direction-cue.short::before {
+      background: linear-gradient(90deg, var(--green), var(--violet), var(--red));
+    }
+
+    .direction-cue.long::before {
+      background: linear-gradient(90deg, var(--red), var(--violet), var(--green));
+    }
+
+    .marker-text {
+      position: absolute;
+      left: 50%;
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      border: 1px solid rgba(217, 225, 232, 0.9);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 7px 8px;
+      box-shadow: 0 8px 20px rgba(31, 41, 51, 0.08);
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    .marker[data-key="tp"] {
+      opacity: 0.72;
+    }
+
+    .marker[data-key="tp"] .marker-text {
+      top: 40px;
+      transform: translateX(-50%);
+    }
+
+    .marker[data-key="entry"] .marker-text {
+      bottom: 34px;
+      transform: translateX(-50%);
+    }
+
+    .marker[data-key="stop"] .marker-text {
+      top: 40px;
+      transform: translateX(-50%);
+    }
+
+    .marker-text strong {
+      font-size: 12px;
+    }
+
+    .marker-text span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .readout {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .readout-row {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfd;
+      display: grid;
+      gap: 5px;
+    }
+
+    .readout-row strong {
+      font-size: 15px;
+    }
+
+    .formula {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(140%);
+      border: 1px solid rgba(15, 118, 110, 0.22);
+      border-radius: 8px;
+      background: #12332f;
+      color: white;
+      padding: 12px 14px;
+      box-shadow: 0 18px 46px rgba(31, 41, 51, 0.26);
+      transition: transform 180ms ease;
+      z-index: 20;
+      max-width: calc(100vw - 32px);
+      text-align: center;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 900px) {
+      .summary {
+        position: static;
+        z-index: auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 0;
+        background: transparent;
+        backdrop-filter: none;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        padding: 16px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: 25px;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .summary,
+      .readout {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        display: contents;
+      }
+
+      .inputs-section {
+        order: 2;
+      }
+
+      .summary {
+        order: 3;
+      }
+
+      .chart {
+        order: 4;
+      }
+
+      .metric {
+        min-height: 104px;
+      }
+
+      .value {
+        font-size: 26px;
+      }
+
+      .section {
+        padding: 15px;
+      }
+
+      .price-map {
+        min-height: 315px;
+      }
+
+      .track,
+      .active-track {
+        top: 152px;
+      }
+
+      .callback-track {
+        top: 167px;
+      }
+
+      .callback-label {
+        top: 188px;
+      }
+
+      .marker {
+        top: 156px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>Calculadora Trailing</h1>
+        <p class="subtitle">Callback y distancia SL-TP1 para gestionar el tramo despues de TP1.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="resetBtn" type="button">Reset</button>
+        <button class="btn primary" id="copyBtn" type="button">Copiar resumen</button>
+      </div>
+    </header>
+
+    <section class="summary" aria-label="Resultados principales">
+      <article class="metric decision" id="decisionCard">
+        <div class="label">Decision</div>
+        <div class="value" id="decisionText">Calculando</div>
+        <div class="note" id="decisionNote">Actualiza cualquier dato para recalcular.</div>
+      </article>
+      <article class="metric">
+        <div class="label">Callback Bitget</div>
+        <div class="value" id="callbackValue">0.00%</div>
+        <div class="note" id="callbackNote">Se introduce como porcentaje.</div>
+      </article>
+      <article class="metric">
+        <div class="label">Callback max.</div>
+        <div class="value" id="callbackMaxValue">0.00%</div>
+        <div class="note" id="callbackMaxNote">Techo teorico por SL-TP1.</div>
+      </article>
+      <article class="metric">
+        <div class="label">SL trailing</div>
+        <div class="value" id="trailingStopValue">0.00</div>
+        <div class="note" id="trailingStopNote">Stop estimado tras TP1.</div>
+      </article>
+      <article class="metric">
+        <div class="label">Distancia SL-TP1</div>
+        <div class="value" id="distanceValue">0.00%</div>
+        <div class="note" id="distanceNote">Espacio disponible antes de TP1.</div>
+      </article>
+      <article class="metric">
+        <div class="label">Margen</div>
+        <div class="value" id="marginValue">0.00 pp</div>
+        <div class="note" id="marginNote">Distancia menos callback.</div>
+      </article>
+    </section>
+
+    <div class="workspace">
+      <section class="section inputs-section" aria-label="Datos editables">
+        <h2>Datos editables</h2>
+        <div class="controls">
+          <div class="field">
+            <label>Tipo de operacion</label>
+            <div class="segmented" role="group" aria-label="Tipo de operacion">
+              <button type="button" data-side="LONG">LONG</button>
+              <button type="button" data-side="SHORT">SHORT</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Modo de callback</label>
+            <div class="segmented" role="group" aria-label="Modo de callback">
+              <button type="button" data-mode="ATR">ATR</button>
+              <button type="button" data-mode="MANUAL">Manual</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="entry">Precio de entrada / referencia</label>
+            <input id="entry" inputmode="decimal" type="text" autocomplete="off">
+          </div>
+
+          <div class="field atr-only">
+            <label for="atr">ATR14</label>
+            <input id="atr" inputmode="decimal" type="text" autocomplete="off">
+          </div>
+
+          <div class="field atr-only">
+            <label for="multiplier">Multiplicador trailing</label>
+            <div class="inline-controls">
+              <input id="multiplierRange" type="range" min="0" max="5" step="0.1">
+              <input id="multiplier" inputmode="decimal" type="text" autocomplete="off">
+            </div>
+            <div class="chips" aria-label="Presets de multiplicador">
+              <button class="chip" type="button" data-multiplier="1">1.0</button>
+              <button class="chip" type="button" data-multiplier="1.5">1.5</button>
+              <button class="chip" type="button" data-multiplier="2">2.0</button>
+            </div>
+          </div>
+
+          <div class="field manual-only" hidden>
+            <label for="manualCallback">Callback deseado %</label>
+            <input id="manualCallback" inputmode="decimal" type="text" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label for="tp1">TP1</label>
+            <input id="tp1" inputmode="decimal" type="text" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <label for="newStop">Nuevo SL / BE</label>
+            <input id="newStop" inputmode="decimal" type="text" autocomplete="off">
+          </div>
+
+          <div class="validation-panel">
+            <h3>Validacion rapida</h3>
+            <div class="validation-list" id="validationList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section chart" aria-label="Lectura visual">
+        <div>
+          <h2>Mapa de precios</h2>
+          <p class="formula" id="formulaText">SHORT: callback menor que (nuevo SL - TP1) / TP1.</p>
+        </div>
+
+        <div class="price-map" id="priceMap">
+          <div class="map-status">
+            <div class="status-dot" id="statusDot"></div>
+            <div>
+              <strong id="mapStatusTitle">Esperando datos</strong>
+              <span id="mapStatusText">Compara tu nuevo SL con el SL que generaria el trailing.</span>
+            </div>
+          </div>
+          <div class="track"></div>
+          <div class="active-track" id="activeTrack"></div>
+          <div class="callback-track" id="callbackTrack"></div>
+          <div class="callback-label" id="callbackLabel">Callback</div>
+          <div class="marker" data-key="tp" id="tpMarker">
+            <div class="marker-text">
+              <strong>TP1 ref.</strong>
+              <span id="tpMarkerText">0.00</span>
+            </div>
+            <div class="pin tp"></div>
+          </div>
+          <div class="marker" data-key="entry" id="entryMarker">
+            <div class="marker-text">
+              <strong>SL trailing</strong>
+              <span id="entryMarkerText">0.00</span>
+            </div>
+            <div class="pin entry"></div>
+          </div>
+          <div class="marker" data-key="stop" id="stopMarker">
+            <div class="marker-text">
+              <strong>Nuevo SL</strong>
+              <span id="stopMarkerText">0.00</span>
+            </div>
+            <div class="pin stop"></div>
+          </div>
+          <div class="direction-cue" id="directionCue">
+            <span id="riskSide">Riesgo</span>
+            <span id="targetSide">TP1</span>
+          </div>
+        </div>
+
+        <div class="readout" aria-label="Lectura detallada">
+          <div class="readout-row">
+            <span class="label">Formula callback</span>
+            <strong id="callbackFormulaText">ATR x multiplicador / entrada x 100</strong>
+          </div>
+          <div class="readout-row">
+            <span class="label">Distancia LONG</span>
+            <strong>(TP1 - nuevo SL) / TP1 x 100</strong>
+          </div>
+          <div class="readout-row">
+            <span class="label">Distancia SHORT</span>
+            <strong>(nuevo SL - TP1) / TP1 x 100</strong>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Resumen copiado.</div>
+
+  <script>
+    const DEFAULTS = {
+      side: "SHORT",
+      mode: "ATR",
+      entry: 62926.8,
+      atr: 500,
+      multiplier: 1.5,
+      manualCallback: 1,
+      tp1: 62149.9,
+      newStop: 62926.8
+    };
+    const ZERO_STATE = {
+      side: "SHORT",
+      mode: "ATR",
+      entry: 0,
+      atr: 0,
+      multiplier: 0,
+      manualCallback: 0,
+      tp1: 0,
+      newStop: 0
+    };
+
+    const state = loadState();
+    const fields = {
+      entry: document.getElementById("entry"),
+      atr: document.getElementById("atr"),
+      multiplier: document.getElementById("multiplier"),
+      multiplierRange: document.getElementById("multiplierRange"),
+      manualCallback: document.getElementById("manualCallback"),
+      tp1: document.getElementById("tp1"),
+      newStop: document.getElementById("newStop")
+    };
+
+    const nodes = {
+      decisionCard: document.getElementById("decisionCard"),
+      decisionText: document.getElementById("decisionText"),
+      decisionNote: document.getElementById("decisionNote"),
+      callbackValue: document.getElementById("callbackValue"),
+      callbackMaxValue: document.getElementById("callbackMaxValue"),
+      callbackMaxNote: document.getElementById("callbackMaxNote"),
+      trailingStopValue: document.getElementById("trailingStopValue"),
+      trailingStopNote: document.getElementById("trailingStopNote"),
+      distanceValue: document.getElementById("distanceValue"),
+      marginValue: document.getElementById("marginValue"),
+      marginNote: document.getElementById("marginNote"),
+      validationList: document.getElementById("validationList"),
+      callbackFormulaText: document.getElementById("callbackFormulaText"),
+      formulaText: document.getElementById("formulaText"),
+      priceMap: document.getElementById("priceMap"),
+      statusDot: document.getElementById("statusDot"),
+      mapStatusTitle: document.getElementById("mapStatusTitle"),
+      mapStatusText: document.getElementById("mapStatusText"),
+      activeTrack: document.getElementById("activeTrack"),
+      callbackTrack: document.getElementById("callbackTrack"),
+      callbackLabel: document.getElementById("callbackLabel"),
+      tpMarker: document.getElementById("tpMarker"),
+      entryMarker: document.getElementById("entryMarker"),
+      stopMarker: document.getElementById("stopMarker"),
+      tpMarkerText: document.getElementById("tpMarkerText"),
+      entryMarkerText: document.getElementById("entryMarkerText"),
+      stopMarkerText: document.getElementById("stopMarkerText"),
+      directionCue: document.getElementById("directionCue"),
+      riskSide: document.getElementById("riskSide"),
+      targetSide: document.getElementById("targetSide"),
+      toast: document.getElementById("toast")
+    };
+
+    function loadState() {
+      try {
+        return { ...DEFAULTS, ...JSON.parse(localStorage.getItem("trailing-calculator") || "{}") };
+      } catch {
+        return { ...DEFAULTS };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem("trailing-calculator", JSON.stringify(state));
+    }
+
+    function numberValue(key) {
+      const value = parseNumber(fields[key].value);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function parseNumber(value) {
+      if (typeof value === "number") return value;
+      return Number(String(value).replace(/,/g, "").trim());
+    }
+
+    function setActiveSide() {
+      document.querySelectorAll("[data-side]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.side === state.side);
+      });
+    }
+
+    function setActiveMultiplier() {
+      document.querySelectorAll("[data-multiplier]").forEach((button) => {
+        button.classList.toggle("active", Number(button.dataset.multiplier) === Number(state.multiplier));
+      });
+    }
+
+    function setActiveMode() {
+      document.querySelectorAll("[data-mode]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === state.mode);
+      });
+      document.querySelectorAll(".atr-only").forEach((node) => {
+        node.hidden = state.mode !== "ATR";
+      });
+      document.querySelectorAll(".manual-only").forEach((node) => {
+        node.hidden = state.mode !== "MANUAL";
+      });
+    }
+
+    function formatPrice(value) {
+      if (!Number.isFinite(value)) return "0.00";
+      if (value === 0) return "0.00";
+      const digits = Math.abs(value) >= 1000 ? 2 : 4;
+      return value.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: digits
+      });
+    }
+
+    function formatInputValue(value, key) {
+      if (!Number.isFinite(value)) return "";
+      if (key === "multiplier") {
+        return value.toLocaleString("en-US", {
+          minimumFractionDigits: value % 1 === 0 ? 0 : 1,
+          maximumFractionDigits: 2
+        });
+      }
+      return formatPrice(value);
+    }
+
+    function formatPct(value) {
+      if (!Number.isFinite(value)) return "0.00%";
+      return `${value.toFixed(2)}%`;
+    }
+
+    function marginStatus(marginPct, validShape) {
+      if (!validShape || !Number.isFinite(marginPct)) {
+        return { key: "invalid", label: "Revisar datos", note: "Completa y revisa la estructura del trade." };
+      }
+      if (marginPct < 0) {
+        return { key: "bad", label: "No lo activaria", note: "El trailing queda peor que tu SL actual." };
+      }
+      if (marginPct < 0.10) {
+        return { key: "tight", label: "Si, pero muy justo", note: "Cabe, pero el margen es demasiado fino." };
+      }
+      if (marginPct <= 0.30) {
+        return { key: "acceptable", label: "Aceptable con cuidado", note: "Se puede usar, pero sin mucho aire." };
+      }
+      return { key: "excellent", label: "Buen espacio", note: "El trailing mejora el SL con margen comodo." };
+    }
+
+    function renderValidation(items) {
+      nodes.validationList.innerHTML = items.map((item) => (
+        `<div class="validation-item ${item.state}">${item.text}</div>`
+      )).join("");
+    }
+
+    function markerPosition(value, min, max) {
+      if (!Number.isFinite(value) || max <= min) return 50;
+      const raw = ((value - min) / (max - min)) * 100;
+      return Math.min(92, Math.max(8, raw));
+    }
+
+    function calculate() {
+      const entry = numberValue("entry");
+      const atr = numberValue("atr");
+      const multiplier = numberValue("multiplier");
+      const manualCallback = numberValue("manualCallback");
+      const tp1 = numberValue("tp1");
+      const newStop = numberValue("newStop");
+      const callbackPct = state.mode === "ATR"
+        ? (entry > 0 ? (atr * multiplier / entry) * 100 : 0)
+        : manualCallback;
+      const distancePct = tp1 > 0
+        ? (state.side === "LONG" ? (tp1 - newStop) / tp1 : (newStop - tp1) / tp1) * 100
+        : 0;
+      const callbackMaxPct = Math.max(0, distancePct);
+      const marginPct = distancePct - callbackPct;
+      const trailingStop = tp1 > 0
+        ? (state.side === "LONG" ? tp1 * (1 - callbackPct / 100) : tp1 * (1 + callbackPct / 100))
+        : 0;
+      const inputReady = entry > 0
+        && tp1 > 0
+        && newStop > 0
+        && callbackPct > 0
+        && (state.mode === "MANUAL" || (atr > 0 && multiplier > 0));
+      const structureValid = state.side === "LONG"
+        ? tp1 > entry && newStop < tp1
+        : tp1 < entry && newStop > tp1;
+      const validShape = inputReady && structureValid && distancePct > 0;
+      const improves = validShape && callbackPct < distancePct;
+      const status = marginStatus(marginPct, validShape);
+
+      nodes.callbackValue.textContent = formatPct(callbackPct);
+      nodes.callbackFormulaText.textContent = state.mode === "ATR"
+        ? "ATR x multiplicador / entrada x 100"
+        : "Callback manual elegido en Bitget";
+      nodes.callbackMaxValue.textContent = formatPct(callbackMaxPct);
+      const recommendedHigh = Math.max(0, callbackMaxPct - 0.10);
+      const recommendedLow = Math.max(0, Math.min(recommendedHigh, callbackMaxPct * 0.65));
+      nodes.callbackMaxNote.textContent = callbackMaxPct > 0
+        ? `Ideal: ${formatPct(recommendedLow)} - ${formatPct(recommendedHigh)}.`
+        : "Necesita datos validos.";
+      nodes.trailingStopValue.textContent = formatPrice(trailingStop);
+      nodes.trailingStopNote.textContent = state.side === "LONG"
+        ? "Mejor si queda sobre tu nuevo SL."
+        : "Mejor si queda bajo tu nuevo SL.";
+      nodes.distanceValue.textContent = formatPct(distancePct);
+      nodes.marginValue.textContent = `${marginPct.toFixed(2)} pp`;
+      nodes.marginNote.textContent = status.key === "excellent"
+        ? "Hay espacio comodo."
+        : status.key === "acceptable"
+          ? "Usable, pero con cuidado."
+          : status.key === "tight"
+            ? "Cabe, pero muy justo."
+            : status.key === "bad"
+              ? "Callback mayor que la distancia."
+              : "Pendiente de datos validos.";
+
+      nodes.decisionCard.classList.toggle("good", status.key === "excellent" || status.key === "acceptable");
+      nodes.decisionCard.classList.toggle("warn", status.key === "tight" || status.key === "invalid");
+      nodes.decisionCard.classList.toggle("bad", status.key === "bad");
+      nodes.decisionText.textContent = status.label;
+      nodes.decisionNote.textContent = status.note;
+
+      renderValidation([
+        {
+          state: inputReady ? "ok" : "bad",
+          text: state.mode === "ATR"
+            ? "Entrada, ATR, multiplicador, TP1 y nuevo SL completos."
+            : "Entrada, callback manual, TP1 y nuevo SL completos."
+        },
+        {
+          state: structureValid ? "ok" : "bad",
+          text: state.side === "LONG"
+            ? "LONG: TP1 por encima de entrada y nuevo SL por debajo de TP1."
+            : "SHORT: TP1 por debajo de entrada y nuevo SL por encima de TP1."
+        },
+        {
+          state: improves ? "ok" : "bad",
+          text: improves
+            ? "El SL trailing estimado mejora tu nuevo SL."
+            : "El SL trailing estimado no mejora tu nuevo SL."
+        }
+      ]);
+
+      const distanceFormula = state.side === "LONG"
+        ? "LONG: callback menor que (TP1 - nuevo SL) / TP1."
+        : "SHORT: callback menor que (nuevo SL - TP1) / TP1.";
+      nodes.formulaText.textContent = distanceFormula;
+
+      updateMap({ entry, tp1, newStop, callbackPct, distancePct, improves, validShape, trailingStop });
+      saveState();
+    }
+
+    function updateMap({ entry, tp1, newStop, callbackPct, distancePct, improves, validShape, trailingStop }) {
+      const values = [tp1, newStop, trailingStop].filter((value) => Number.isFinite(value) && value > 0);
+      nodes.priceMap.classList.toggle("long", state.side === "LONG");
+      nodes.priceMap.classList.toggle("short", state.side === "SHORT");
+      nodes.activeTrack.classList.toggle("ok", improves);
+      nodes.activeTrack.classList.toggle("bad", validShape && !improves);
+      nodes.entryMarker.classList.toggle("bad", validShape && !improves);
+      nodes.statusDot.classList.toggle("ok", improves);
+      nodes.statusDot.classList.toggle("bad", validShape && !improves);
+      nodes.directionCue.classList.toggle("long", state.side === "LONG");
+      nodes.directionCue.classList.toggle("short", state.side === "SHORT");
+      nodes.riskSide.textContent = state.side === "LONG" ? "Peor SL" : "Mejor SL";
+      nodes.targetSide.textContent = state.side === "LONG" ? "Mejor SL" : "Peor SL";
+
+      if (!values.length) {
+        nodes.entryMarker.style.setProperty("--x", "50%");
+        nodes.tpMarker.style.setProperty("--x", "50%");
+        nodes.stopMarker.style.setProperty("--x", "50%");
+        nodes.activeTrack.style.setProperty("--active-left", "50%");
+        nodes.activeTrack.style.setProperty("--active-width", "0%");
+        nodes.callbackTrack.style.setProperty("--callback-left", "50%");
+        nodes.callbackTrack.style.setProperty("--callback-width", "0%");
+        nodes.callbackLabel.style.setProperty("--callback-label-x", "50%");
+        nodes.tpMarkerText.textContent = "0.00";
+        nodes.entryMarkerText.textContent = "0.00";
+        nodes.stopMarkerText.textContent = "0.00";
+        nodes.mapStatusTitle.textContent = "Esperando datos";
+        nodes.mapStatusText.textContent = "Completa entrada, ATR, multiplicador, TP1 y nuevo SL.";
+        nodes.callbackLabel.textContent = "Callback 0.00%";
+        return;
+      }
+
+      const low = Math.min(...values);
+      const high = Math.max(...values);
+      const padding = Math.max((high - low) * 0.18, high * 0.002, 1);
+      const min = low - padding;
+      const max = high + padding;
+      const trailingStopX = markerPosition(trailingStop, min, max);
+      const tpX = markerPosition(tp1, min, max);
+      const stopX = markerPosition(newStop, min, max);
+      const activeLeft = Math.min(trailingStopX, stopX);
+      const activeWidth = Math.max(4, Math.abs(stopX - trailingStopX));
+
+      nodes.entryMarker.style.setProperty("--x", `${trailingStopX}%`);
+      nodes.tpMarker.style.setProperty("--x", `${tpX}%`);
+      nodes.stopMarker.style.setProperty("--x", `${stopX}%`);
+      nodes.activeTrack.style.setProperty("--active-left", `${activeLeft}%`);
+      nodes.activeTrack.style.setProperty("--active-width", `${activeWidth}%`);
+      nodes.callbackTrack.style.setProperty("--callback-left", `${trailingStopX}%`);
+      nodes.callbackTrack.style.setProperty("--callback-width", "0%");
+      nodes.callbackLabel.style.setProperty("--callback-label-x", `${trailingStopX}%`);
+      nodes.tpMarkerText.textContent = formatPrice(tp1);
+      nodes.entryMarkerText.textContent = formatPrice(trailingStop);
+      nodes.stopMarkerText.textContent = formatPrice(newStop);
+      nodes.callbackLabel.textContent = `Callback ${formatPct(callbackPct)}`;
+      if (!validShape) {
+        nodes.mapStatusTitle.textContent = "Mapa incompleto";
+        nodes.mapStatusText.textContent = state.side === "LONG"
+          ? "Para LONG, TP1 debe quedar a la derecha del nuevo SL."
+          : "Para SHORT, TP1 debe quedar a la izquierda del nuevo SL.";
+      } else if (improves) {
+        nodes.mapStatusTitle.textContent = "El trailing mejora tu SL";
+        nodes.mapStatusText.textContent = state.side === "LONG"
+          ? "El SL trailing queda por encima del nuevo SL."
+          : "El SL trailing queda por debajo del nuevo SL.";
+      } else {
+        nodes.mapStatusTitle.textContent = "El trailing queda peor";
+        nodes.mapStatusText.textContent = state.side === "LONG"
+          ? "El SL trailing queda por debajo del nuevo SL."
+          : "El SL trailing queda por encima del nuevo SL.";
+      }
+    }
+
+    function syncInputs() {
+      fields.entry.value = formatInputValue(state.entry, "entry");
+      fields.atr.value = formatInputValue(state.atr, "atr");
+      fields.multiplier.value = formatInputValue(state.multiplier, "multiplier");
+      fields.multiplierRange.value = state.multiplier;
+      fields.manualCallback.value = formatInputValue(state.manualCallback, "manualCallback");
+      fields.tp1.value = formatInputValue(state.tp1, "tp1");
+      fields.newStop.value = formatInputValue(state.newStop, "newStop");
+      setActiveSide();
+      setActiveMode();
+      setActiveMultiplier();
+      calculate();
+    }
+
+    function showToast(text) {
+      nodes.toast.textContent = text;
+      nodes.toast.classList.add("show");
+      window.clearTimeout(showToast.timeout);
+      showToast.timeout = window.setTimeout(() => nodes.toast.classList.remove("show"), 1800);
+    }
+
+    function summaryText() {
+      return [
+        "Calculadora Trailing",
+        `Operacion: ${state.side}`,
+        `Modo: ${state.mode}`,
+        `Entrada: ${formatPrice(numberValue("entry"))}`,
+        `ATR14: ${formatPrice(numberValue("atr"))}`,
+        `Multiplicador: ${Number(state.multiplier).toFixed(1)}`,
+        `Callback manual: ${formatPct(numberValue("manualCallback"))}`,
+        `TP1: ${formatPrice(numberValue("tp1"))}`,
+        `Nuevo SL / BE: ${formatPrice(numberValue("newStop"))}`,
+        `Callback Bitget: ${nodes.callbackValue.textContent}`,
+        `Callback maximo: ${nodes.callbackMaxValue.textContent}`,
+        `SL trailing estimado: ${nodes.trailingStopValue.textContent}`,
+        `Distancia SL-TP1: ${nodes.distanceValue.textContent}`,
+        `Margen: ${nodes.marginValue.textContent}`,
+        `Decision: ${nodes.decisionText.textContent}`
+      ].join("\n");
+    }
+
+    document.querySelectorAll("[data-side]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.side = button.dataset.side;
+        setActiveSide();
+        calculate();
+      });
+    });
+
+    document.querySelectorAll("[data-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.mode = button.dataset.mode;
+        setActiveMode();
+        calculate();
+      });
+    });
+
+    document.querySelectorAll("[data-multiplier]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.multiplier = Number(button.dataset.multiplier);
+        fields.multiplier.value = state.multiplier;
+        fields.multiplierRange.value = state.multiplier;
+        setActiveMultiplier();
+        calculate();
+      });
+    });
+
+    Object.entries(fields).forEach(([key, field]) => {
+      field.addEventListener("input", () => {
+        if (key === "multiplierRange") {
+          state.multiplier = Number(field.value);
+          fields.multiplier.value = formatInputValue(state.multiplier, "multiplier");
+        } else {
+          state[key] = parseNumber(field.value);
+          if (key === "multiplier") fields.multiplierRange.value = state.multiplier;
+        }
+        setActiveMultiplier();
+        calculate();
+      });
+      if (key !== "multiplierRange") {
+        field.addEventListener("blur", () => {
+          field.value = formatInputValue(parseNumber(field.value), key);
+        });
+        field.addEventListener("focus", () => {
+          field.value = String(parseNumber(field.value) || "");
+        });
+      }
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      Object.assign(state, ZERO_STATE);
+      syncInputs();
+      showToast("Calculadora en cero.");
+    });
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(summaryText());
+        showToast("Resumen copiado.");
+      } catch {
+        showToast("No se pudo copiar automaticamente.");
+      }
+    });
+
+    syncInputs();
+  </script>
+</body>
+</html>

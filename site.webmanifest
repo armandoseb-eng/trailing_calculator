@@ -1,0 +1,26 @@
+{
+  "name": "Calculadora Trailing",
+  "short_name": "Trailing",
+  "description": "Calculadora para decidir si usar trailing stop en Bitget despues de TP1.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "./apple-touch-icon-v2.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
